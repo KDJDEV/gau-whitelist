@@ -32,7 +32,7 @@ type Config struct {
 	IncludeSubdomains bool              `mapstructure:"subdomains"`
 	RemoveParameters  bool              `mapstructure:"parameters"`
 	Providers         []string          `mapstructure:"providers"`
-	Blacklist         []string          `mapstructure:"blacklist"`
+	Whitelist         []string          `mapstructure:"whitelist"`
 	JSON              bool              `mapstructure:"json"`
 	URLScan           URLScanConfig     `mapstructure:"urlscan"`
 	OTX               string            `mapstructure:"otx"`
@@ -80,9 +80,9 @@ func (c *Config) ProviderConfig() (*providers.Config, error) {
 		OTX: c.OTX,
 	}
 
-	pc.Blacklist = make(map[string]struct{})
-	for _, b := range c.Blacklist {
-		pc.Blacklist[b] = struct{}{}
+	pc.Whitelist = make(map[string]struct{})
+	for _, b := range c.Whitelist {
+		pc.Whitelist[b] = struct{}{}
 	}
 
 	return pc, nil
@@ -100,7 +100,7 @@ func New() *Options {
 	pflag.Uint("timeout", 45, "timeout (in seconds) for HTTP client")
 	pflag.Uint("retries", 0, "retries for HTTP client")
 	pflag.String("proxy", "", "http proxy to use")
-	pflag.StringSlice("blacklist", []string{}, "list of extensions to skip")
+	pflag.StringSlice("whitelist", []string{}, "list of extensions to skip")
 	pflag.StringSlice("providers", []string{}, "list of providers to use (wayback,commoncrawl,otx,urlscan)")
 	pflag.Bool("subs", false, "include subdomains of target domain")
 	pflag.Bool("fp", false, "remove different parameters of the same endpoint")
@@ -169,7 +169,7 @@ func (o *Options) DefaultConfig() *Config {
 		IncludeSubdomains: false,
 		RemoveParameters:  false,
 		Providers:         []string{"wayback", "commoncrawl", "otx", "urlscan"},
-		Blacklist:         []string{},
+		Whitelist:         []string{},
 		JSON:              false,
 		Outfile:           "",
 	}
@@ -188,7 +188,7 @@ func (o *Options) getFlagValues(c *Config) {
 	outfile := o.viper.GetString("o")
 	fetchers := o.viper.GetStringSlice("providers")
 	threads := o.viper.GetUint("threads")
-	blacklist := o.viper.GetStringSlice("blacklist")
+	whitelist := o.viper.GetStringSlice("whitelist")
 	subs := o.viper.GetBool("subs")
 	fp := o.viper.GetBool("fp")
 
@@ -209,9 +209,9 @@ func (o *Options) getFlagValues(c *Config) {
 		c.Threads = threads
 	}
 
-	// set if --blacklist flag is specified, otherwise use default
-	if len(blacklist) > 0 {
-		c.Blacklist = blacklist
+	// set if --whitelist flag is specified, otherwise use default
+	if len(whitelist) > 0 {
+		c.Whitelist = whitelist
 	}
 
 	// set if --providers flag is specified, otherwise use default

@@ -27,7 +27,7 @@ type Config struct {
 	RemoveParameters  bool
 	Client            *fasthttp.Client
 	Providers         []string
-	Blacklist         map[string]struct{}
+	Whitelist         map[string]struct{}
 	Output            string
 	JSON              bool
 	URLScan           URLScan
